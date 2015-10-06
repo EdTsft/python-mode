@@ -4,7 +4,7 @@ from .environment import env
 from .utils import silence_stderr
 
 import os.path
-
+import subprocess
 
 from pylama.lint.extensions import LINTERS
 
@@ -58,7 +58,24 @@ def code_check():
             from pylama.core import LOGGER, logging
             LOGGER.setLevel(logging.DEBUG)
 
-        errors = run(path, code='\n'.join(env.curbuf) + '\n', options=options)
+        check_path_code = '\n'.join(
+            'from pylama.tasks import check_path'
+            'check_path({path!r}, options={options!r}, code={code!r})'
+        ).format(
+            path=path,
+            options=options,
+            code='\n'.join(env.curbuf) + '\n'
+        )
+
+        check_path_process = subprocess.Popen(
+            'python3', '-c', check_path_code,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+
+        errors, stderr = check_path_process.communicate()
+        env.debug("Process stdout: ", errors)
+        env.debug("Process stderr: ", stderr)
+
 
     env.debug("Find errors: ", len(errors))
     sort_rules = env.var('g:pymode_lint_sort')
