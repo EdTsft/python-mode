@@ -289,7 +289,7 @@ Check code on every save (every)                    *'g:pymode_lint_unmodified'*
 >
     let g:pymode_lint_unmodified = 0
 
-Check code when editing (on the fly)                        *'g:pymode_lint_on_fly'*
+Check code when editing (on the fly)                    *'g:pymode_lint_on_fly'*
 >
     let g:pymode_lint_on_fly = 0
 
