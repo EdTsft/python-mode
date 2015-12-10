@@ -46,19 +46,19 @@ def _external_python_code_check(python_binary, linters, ignore, select, linter_o
     env.debug("Linter options: ", linter_options)
 
     options_file = None
-    if linter_options:
-        with tempfile.NamedTemporaryFile('w', delete=False) as f:
-            for linter, opts in linter_options.items():
-                f.write('[pylama:{linter!s}]\n'.format(linter=linter))
-                for param, value in opts.items():
-                    f.write('{param!s}={value!s}\n'.format(
-                        param=param, value=value))
-
-            options_file = f.name
-            check_path_command_args += ['--options', options_file]
-
-    env.debug("Check path args: ", check_path_command_args)
     try:
+        if linter_options:
+            with tempfile.NamedTemporaryFile('w', delete=False) as f:
+                options_file = f.name
+                for linter, opts in linter_options.items():
+                    f.write('[pylama:{linter!s}]\n'.format(linter=linter))
+                    for param, value in opts.items():
+                        f.write('{param!s}={value!s}\n'.format(
+                            param=param, value=value))
+
+                check_path_command_args += ['--options', options_file]
+
+        env.debug("Check path args: ", check_path_command_args)
         check_path_process = subprocess.Popen(
             check_path_command_args,
             stdout=subprocess.PIPE,
@@ -66,7 +66,8 @@ def _external_python_code_check(python_binary, linters, ignore, select, linter_o
 
         stdout, stderr = check_path_process.communicate()
     finally:
-        os.remove(options_file)
+        if options_file is not None:
+            os.remove(options_file)
 
     errors = []
     for line in stdout.splitlines():
